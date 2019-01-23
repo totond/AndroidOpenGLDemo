@@ -16,7 +16,7 @@ import java.nio.FloatBuffer;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import static com.yanzhikai.androidopengldemo.GLUtil.createProgram;
+import static com.yanzhikai.androidopengldemo.GLUtil.linkProgram;
 import static com.yanzhikai.androidopengldemo.GLUtil.fragmentShader;
 import static com.yanzhikai.androidopengldemo.GLUtil.verticesShader;
 
@@ -43,7 +43,7 @@ public class EGLFaceRender implements GLSurfaceView.Renderer {
 
         // 初始化着色器
         // 基于顶点着色器与片元着色器创建程序
-        program = createProgram(verticesShader, fragmentShader);
+        program = linkProgram(verticesShader, fragmentShader);
         // 获取着色器中的属性引用id(传入的字符串就是我们着色器脚本中的属性名)
         vPosition = GLES20.glGetAttribLocation(program, "vPosition");
         uColor = GLES20.glGetUniformLocation(program, "uColor");
@@ -78,7 +78,7 @@ public class EGLFaceRender implements GLSurfaceView.Renderer {
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        program = createProgram(verticesShader, fragmentShader);
+        program = linkProgram(verticesShader, fragmentShader);
         // 获取着色器中的属性引用id(传入的字符串就是我们着色器脚本中的属性名)
         vPosition = GLES20.glGetAttribLocation(program, "vPosition");
         uColor = GLES20.glGetUniformLocation(program, "uColor");

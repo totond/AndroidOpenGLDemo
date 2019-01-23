@@ -1,14 +1,20 @@
 package com.yanzhikai.androidopengldemo;
 
+import android.content.Context;
 import android.opengl.GLES20;
 import android.util.Log;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
 public class GLUtil {
 
+    public static final String TAG = "GLUtil";
     /**
      * 创建shader程序的方法
      */
-    public static int createProgram(String vertexSource, String fragmentSource) {
+    public static int linkProgram(String vertexSource, String fragmentSource) {
         //加载顶点着色器
         int vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertexSource);
         if (vertexShader == 0) {
@@ -67,7 +73,7 @@ public class GLUtil {
             // 获取Shader的编译情况
             GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compiled, 0);
             if (compiled[0] == 0) {//若编译失败则显示错误日志并删除此shader
-                Log.e("ES20_ERROR", "Could not compile shader " + shaderType + ":");
+                Log.e("ES20_ERROR", GLES20.glGetError() + " Could not compile shader " + shaderType + ":");
                 Log.e("ES20_ERROR", GLES20.glGetShaderInfoLog(shader));
                 GLES20.glDeleteShader(shader);
                 shader = 0;
@@ -75,6 +81,53 @@ public class GLUtil {
         }
         return shader;
     }
+
+
+    /**
+     * 从原生文件读入glsl
+     * @param context
+     * @param resourceId
+     * @return
+     */
+    public static String readTextFileFromResource(Context context, int resourceId) {
+        StringBuilder body = new StringBuilder();
+
+        try {
+            InputStream inputStream = context.getResources().openRawResource(resourceId);
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+
+            String nextLine;
+
+            while ((nextLine = bufferedReader.readLine()) != null) {
+                body.append(nextLine);
+                body.append('\n');
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return body.toString();
+    }
+
+
+    /**
+     * 验证程序
+     * @param programObjectId 程序id
+     * @return 验证结果
+     */
+    public static boolean validateProgram(int programObjectId) {
+        GLES20.glValidateProgram(programObjectId);
+
+        final int[] validateStatus = new int[1];
+        GLES20.glGetProgramiv(programObjectId, GLES20.GL_VALIDATE_STATUS, validateStatus, 0);
+
+        Log.i(TAG, "Result of validating program:" + validateStatus[0]
+                + "\nLog:" + GLES20.glGetProgramInfoLog(programObjectId));
+
+
+        return validateStatus[0] != GLES20.GL_FALSE;
+    }
+
 
     // 顶点着色器的脚本
     public static final String verticesShader
@@ -90,4 +143,5 @@ public class GLUtil {
             + "void main(){                     \n"
             + "   gl_FragColor = uColor;        \n" // 给此片元的填充色
             + "}";
+
 }

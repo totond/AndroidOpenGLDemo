@@ -13,7 +13,7 @@ public class BitmapUtil {
      * @param ib 图像数据
      * @return bitmap
      */
-    private static Bitmap frameToBitmap(int width, int height, IntBuffer ib) {
+    public static Bitmap frameToBitmap(int width, int height, IntBuffer ib) {
         int pixs[] = ib.array();
         // 扫描转置(OpenGl:左上->右下 Bitmap:左下->右上)
         for (int y = 0; y < height / 2; y++) {

@@ -2,13 +2,11 @@ package com.yanzhikai.androidopengldemo.noscreen;
 
 import android.opengl.GLES20;
 
-import com.yanzhikai.androidopengldemo.EGLFace.GLRenderThread;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-import static com.yanzhikai.androidopengldemo.GLUtil.createProgram;
+import static com.yanzhikai.androidopengldemo.GLUtil.linkProgram;
 
 public class TestRenderer extends GLRenderer {
     private static final String TAG = "TestRenderer";
@@ -46,7 +44,7 @@ public class TestRenderer extends GLRenderer {
     @Override
     public void onCreated() {
         //基于顶点着色器与片元着色器创建程序
-        program = createProgram(verticesShader, fragmentShader);
+        program = linkProgram(verticesShader, fragmentShader);
         // 获取着色器中的属性引用id(传入的字符串就是我们着色器脚本中的属性名)
         vPosition = GLES20.glGetAttribLocation(program, "vPosition");
         uColor = GLES20.glGetUniformLocation(program, "uColor");
