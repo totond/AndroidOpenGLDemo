@@ -8,12 +8,14 @@ import android.widget.Button;
 import com.yanzhikai.androidopengldemo.EGLFace.EGLFaceActivity;
 import com.yanzhikai.androidopengldemo.hellodemo.HelloDemoActivity;
 import com.yanzhikai.androidopengldemo.noscreen.NoScreenActivity;
+import com.yanzhikai.androidopengldemo.video.VideoHandleActivity;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private Button btnHelloDemo;
     private Button btnEglFaceDemo;
     private Button btnNoScreenDemo;
+    private Button btnVideoHandleDemo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +32,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnEglFaceDemo.setOnClickListener(this);
         btnNoScreenDemo = (Button) findViewById(R.id.btn_no_screen_demo);
         btnNoScreenDemo.setOnClickListener(this);
+        btnVideoHandleDemo = (Button) findViewById(R.id.btn_video_handle_demo);
+        btnVideoHandleDemo.setOnClickListener(this);
     }
 
     @Override
@@ -43,6 +47,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.btn_no_screen_demo:
                 ActivityJumpUtil.startActivity(this, NoScreenActivity.class);
+                break;
+            case R.id.btn_video_handle_demo:
+                ActivityJumpUtil.startActivity(this, VideoHandleActivity.class);
                 break;
         }
     }

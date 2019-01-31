@@ -20,7 +20,7 @@ public class HelloDemoActivity extends AppCompatActivity {
     private void initView() {
         glsvHello = (GLSurfaceView) findViewById(R.id.glsv_hello);
         glsvHello.setEGLContextClientVersion(2);
-        glsvHello.setRenderer(new HelloRender());
+        glsvHello.setRenderer(new HelloRender(this));
         glsvHello.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
         
     }

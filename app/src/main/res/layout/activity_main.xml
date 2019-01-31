@@ -27,4 +27,11 @@
         android:id="@+id/btn_no_screen_demo"
         android:text="离屏渲染Demo"
         />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_video_handle_demo"
+        android:text="视频处理Demo"
+        />
 </LinearLayout>

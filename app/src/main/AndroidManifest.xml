@@ -18,7 +18,8 @@
         </activity>
         <activity android:name=".hellodemo.HelloDemoActivity" />
         <activity android:name=".EGLFace.EGLFaceActivity" />
-        <activity android:name=".noscreen.NoScreenActivity"></activity>
+        <activity android:name=".noscreen.NoScreenActivity" />
+        <activity android:name=".video.VideoHandleActivity"></activity>
     </application>
 
 </manifest>

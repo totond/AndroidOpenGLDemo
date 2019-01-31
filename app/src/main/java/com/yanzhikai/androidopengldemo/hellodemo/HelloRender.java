@@ -1,7 +1,12 @@
 package com.yanzhikai.androidopengldemo.hellodemo;
 
+import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.opengl.Matrix;
+
+import com.yanzhikai.androidopengldemo.GLUtil;
+import com.yanzhikai.androidopengldemo.R;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -16,48 +21,92 @@ import static com.yanzhikai.androidopengldemo.GLUtil.verticesShader;
 
 public class HelloRender implements GLSurfaceView.Renderer {
 
+    private static final int BYTES_PER_FLOAT = 4;
+    private static final int POSITION_COMPONENT_COUNT = 2;
+    private static final int COLOR_COMPONENT_COUNT = 3;
+    private static final int STRIDE = (POSITION_COMPONENT_COUNT + COLOR_COMPONENT_COUNT) * BYTES_PER_FLOAT;
+
+
     private int program;
-    private int vPosition;
-    private int uColor;
+    private int aPositionLocation;
+
+//    private int uColor;
+    private String vertexShaderSource, fragmentShaderSource;
+    private static final String A_COLOR = "a_Color";
+    private int aColorLocation;
+
+    private static final String U_MATRIX = "u_Matrix";
+    private int uMatrixLocation;
+    private float[] projectionMatrix = new float[16];
+
+
+    public HelloRender(Context context) {
+        vertexShaderSource = GLUtil.readTextFileFromResource(context, R.raw.simple_vertex_shader);
+        fragmentShaderSource = GLUtil.readTextFileFromResource(context, R.raw.simple_fragment_shader);
+    }
 
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+
+
         // 使用某套shader程序
-        program = linkProgram(verticesShader, fragmentShader);
+        program = linkProgram(vertexShaderSource, fragmentShaderSource);
         GLES20.glUseProgram(program);
         // 获取着色器中的属性引用id(传入的字符串就是我们着色器脚本中的属性名)
-        vPosition = GLES20.glGetAttribLocation(program, "vPosition");
-        uColor = GLES20.glGetUniformLocation(program, "uColor");
+        aPositionLocation = GLES20.glGetAttribLocation(program, "a_Position");
+//        uColor = GLES20.glGetUniformLocation(program, "u_Color");
+        aColorLocation = GLES20.glGetAttribLocation(program, A_COLOR);
+        uMatrixLocation = GLES20.glGetUniformLocation(program, U_MATRIX);
 
-        gl.glClearColor(0,0,0,0);
+        gl.glClearColor(0, 0, 0, 0);
 
         // 获取图形的顶点坐标
-        FloatBuffer vertices = getVertices();
-        vertices.position(0);
-        // 为画笔指定顶点位置数据(vPosition)
-        GLES20.glVertexAttribPointer(vPosition, 2, GLES20.GL_FLOAT, false, 0, vertices);
-        // 允许顶点位置数据数组
-        GLES20.glEnableVertexAttribArray(vPosition);
+        FloatBuffer vertexData = getVertices();
+        vertexData.position(0);
+        GLES20.glVertexAttribPointer(aPositionLocation, POSITION_COMPONENT_COUNT,
+                GLES20.GL_FLOAT, false, STRIDE, vertexData);
+        GLES20.glEnableVertexAttribArray(aPositionLocation);
+
+        vertexData.position(2);
+        GLES20.glVertexAttribPointer(aColorLocation, COLOR_COMPONENT_COUNT,
+                GLES20.GL_FLOAT, false, STRIDE, vertexData);
+        GLES20.glEnableVertexAttribArray(aColorLocation);
     }
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         // 设置绘图的窗口(可以理解成在画布上划出一块区域来画图)
-        GLES20.glViewport(0,0,width,height);
+        GLES20.glViewport(0, 0, width, height);
+
+        final float aspectRatio = width > height ?
+                (float)width / (float)height   :
+                (float)height / (float)width ;
+        if(width > height){
+            Matrix.orthoM(projectionMatrix,0, -aspectRatio, aspectRatio,   -1f,1f,    -1f,1f);
+        } else {
+            Matrix.orthoM(projectionMatrix,0, -1f,1f,    -aspectRatio, aspectRatio,   -1f,1f);
+        }
+
     }
 
     @Override
     public void onDrawFrame(GL10 gl) {
         // 清屏
-        GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES20.glUniformMatrix4fv(uMatrixLocation,1, false,  projectionMatrix,0);
+
         // 设置属性uColor(颜色 索引,R,G,B,A)
-        GLES20.glUniform4f(uColor, 0.0f, 1.0f, 0.0f, 1.0f);
-        // 绘制，参数：画三角形、从顶点数组的开头处开始读顶点、读入3个顶点
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 3);
+//        GLES20.glUniform4f(aColorLocation, 1.0f, 1.0f, 1.0f, 1.0f);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 6);
+//        GLES20.glUniform4f(aColorLocation, 1.0f, 0.0f, 0.0f, 1.0f);
+        GLES20.glDrawArrays(GLES20.GL_LINES, 6, 2);
+//        GLES20.glUniform4f(aColorLocation, 0.0f, 0.0f, 1.0f, 1.0f);
+        GLES20.glDrawArrays(GLES20.GL_POINTS, 8, 1);
+//        GLES20.glUniform4f(aColorLocation, 0.0f, 1.0f, 0.0f, 1.0f);
+        GLES20.glDrawArrays(GLES20.GL_POINTS, 9, 1);
 
     }
-
 
 
     /**
@@ -69,9 +118,22 @@ public class HelloRender implements GLSurfaceView.Renderer {
      */
     private FloatBuffer getVertices() {
         float vertices[] = {
-                0.0f,   0.5f,
-                -0.5f, -0.5f,
-                0.5f,  -0.5f,
+
+                //  X, Y,        R, G, B
+                // 三角扇形
+                0, 0,           1f, 1f, 1f,
+                -0.5f, -0.8f, 0.7f, 0.7f, 0.7f,
+                0.5f, -0.8f, 0.7f, 0.7f, 0.7f,
+                0.5f, 0.8f, 0.7f, 0.7f, 0.7f,
+                -0.5f, 0.8f, 0.7f, 0.7f, 0.7f,
+                -0.5f, -0.8f, 0.7f, 0.7f, 0.7f,
+                // 中间的分界线
+                -0.5f, 0f, 1f, 0f, 0f,
+                0.5f, 0f, 1f, 0f, 0f,
+                // 两个木槌的质点位置
+                0f, -0.4f, 0f, 0f, 1f,
+                0f, 0.4f, 1f, 0f, 0f,
+
         };
 
        /* ByteBuffer.allocateDirect(vertices.length * 4)
