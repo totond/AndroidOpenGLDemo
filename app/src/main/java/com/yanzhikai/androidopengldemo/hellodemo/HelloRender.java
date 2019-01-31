@@ -7,6 +7,8 @@ import android.opengl.Matrix;
 
 import com.yanzhikai.androidopengldemo.GLUtil;
 import com.yanzhikai.androidopengldemo.R;
+import com.yanzhikai.androidopengldemo.hellodemo.data.Mallet;
+import com.yanzhikai.androidopengldemo.hellodemo.data.Table;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -38,6 +40,12 @@ public class HelloRender implements GLSurfaceView.Renderer {
     private static final String U_MATRIX = "u_Matrix";
     private int uMatrixLocation;
     private float[] projectionMatrix = new float[16];
+
+    private Table table;
+    private Mallet mallet;
+    private TextureShaderProgram textureShaderProgram;
+    private ColorShaderProgram colorShaderProgram;
+
 
 
     public HelloRender(Context context) {
