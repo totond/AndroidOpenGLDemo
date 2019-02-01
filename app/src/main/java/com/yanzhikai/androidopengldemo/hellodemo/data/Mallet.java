@@ -1,43 +1,49 @@
 package com.yanzhikai.androidopengldemo.hellodemo.data;
 
 import android.opengl.GLES20;
+import android.opengl.Matrix;
 
 import com.yanzhikai.androidopengldemo.Constants;
 import com.yanzhikai.androidopengldemo.hellodemo.ColorShaderProgram;
 
-public class Mallet {
-    private static final int POSITION_COMPONENT_COUNT = 2;
-    private static final int COLOR_COMPONENT_COUNT = 3;
-    private static final int STRIDE = (POSITION_COMPONENT_COUNT+COLOR_COMPONENT_COUNT)* Constants.BYTES_PER_FLOAT;
+import java.util.List;
 
-    private static final float[] VERTEX_DATA = {
-            // 两个木槌的质点位置
-            0f,   -0.4f,  0f,0f,0f,
-            0f,    0.4f,  0f,0f,0f,
-    };
+
+public class Mallet {
+    private static final int POSITION_COMPONENT_COUNT = 3;
 
     private final VertexArray vertexArray;
+    private List<ObjectBuilder.DrawCommand> drawList;
 
-    public Mallet(){
-        vertexArray = new VertexArray(VERTEX_DATA);
+
+    public float[] modelMatrix = new float[16];
+
+    public final float raduis;
+    public final float height;
+
+    public Mallet(float radius, float height, int numPointsAroundMallet) {
+        ObjectBuilder.GeneratedData mallet = ObjectBuilder.createMallet(
+                new Geometry.Point(0f, 0f, 0f),
+                radius, height, numPointsAroundMallet);
+        this.raduis = radius;
+        this.height = height;
+
+        vertexArray = new VertexArray(mallet.vertexData);
+        drawList = mallet.drawCommandlist;
+
+        Matrix.setIdentityM(modelMatrix,0);
     }
 
-    public void bindData(ColorShaderProgram shaderProgram){
+    public void bindData(ColorShaderProgram shaderProgram) {
         vertexArray.setVertexAttributePointer(
                 shaderProgram.aPositionLocation,
-                POSITION_COMPONENT_COUNT,
-                STRIDE,
-                0);
-
-        vertexArray.setVertexAttributePointer(
-                shaderProgram.aColorLocation,
-                COLOR_COMPONENT_COUNT,
-                STRIDE,
-                POSITION_COMPONENT_COUNT
+                POSITION_COMPONENT_COUNT, 0, 0
         );
     }
 
     public void draw() {
-        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, 2);
+        for (ObjectBuilder.DrawCommand command : drawList) {
+            command.draw();
+        }
     }
 }

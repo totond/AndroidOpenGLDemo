@@ -1,6 +1,7 @@
 package com.yanzhikai.androidopengldemo.hellodemo.data;
 
 import android.opengl.GLES20;
+import android.opengl.Matrix;
 
 import com.yanzhikai.androidopengldemo.Constants;
 import com.yanzhikai.androidopengldemo.hellodemo.TextureShaderProgram;
@@ -23,8 +24,11 @@ public class Table {
 
     private final VertexArray vertexArray;
 
+    public float[] modelMatrix = new float[16];
+
     public Table(){
         vertexArray = new VertexArray(VERTEX_DATA);
+        Matrix.setIdentityM(modelMatrix,0);
     }
 
     public void bindData(TextureShaderProgram shaderProgram){

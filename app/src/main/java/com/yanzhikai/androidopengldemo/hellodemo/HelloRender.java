@@ -6,6 +6,7 @@ import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 
 import com.yanzhikai.androidopengldemo.GLUtil;
+import com.yanzhikai.androidopengldemo.MatrixHelper;
 import com.yanzhikai.androidopengldemo.R;
 import com.yanzhikai.androidopengldemo.hellodemo.data.Mallet;
 import com.yanzhikai.androidopengldemo.hellodemo.data.Table;
@@ -24,7 +25,7 @@ import static com.yanzhikai.androidopengldemo.GLUtil.verticesShader;
 public class HelloRender implements GLSurfaceView.Renderer {
 
     private static final int BYTES_PER_FLOAT = 4;
-    private static final int POSITION_COMPONENT_COUNT = 2;
+    private static final int POSITION_COMPONENT_COUNT = 4;
     private static final int COLOR_COMPONENT_COUNT = 3;
     private static final int STRIDE = (POSITION_COMPONENT_COUNT + COLOR_COMPONENT_COUNT) * BYTES_PER_FLOAT;
 
@@ -32,7 +33,7 @@ public class HelloRender implements GLSurfaceView.Renderer {
     private int program;
     private int aPositionLocation;
 
-//    private int uColor;
+    //    private int uColor;
     private String vertexShaderSource, fragmentShaderSource;
     private static final String A_COLOR = "a_Color";
     private int aColorLocation;
@@ -41,11 +42,8 @@ public class HelloRender implements GLSurfaceView.Renderer {
     private int uMatrixLocation;
     private float[] projectionMatrix = new float[16];
 
-    private Table table;
-    private Mallet mallet;
-    private TextureShaderProgram textureShaderProgram;
-    private ColorShaderProgram colorShaderProgram;
-
+    private final float[] modelMatrix = new float[16];
+    private final float[] uMatrix = new float[16];
 
 
     public HelloRender(Context context) {
@@ -87,14 +85,15 @@ public class HelloRender implements GLSurfaceView.Renderer {
         // 设置绘图的窗口(可以理解成在画布上划出一块区域来画图)
         GLES20.glViewport(0, 0, width, height);
 
-        final float aspectRatio = width > height ?
-                (float)width / (float)height   :
-                (float)height / (float)width ;
-        if(width > height){
-            Matrix.orthoM(projectionMatrix,0, -aspectRatio, aspectRatio,   -1f,1f,    -1f,1f);
-        } else {
-            Matrix.orthoM(projectionMatrix,0, -1f,1f,    -aspectRatio, aspectRatio,   -1f,1f);
-        }
+        MatrixHelper.perspectiveM(projectionMatrix, 45, (float) width / (float) height, 1f, 100f);
+
+
+        Matrix.setIdentityM(modelMatrix, 0);
+        Matrix.translateM(modelMatrix, 0, 0f, 0f, -3f);  // 平移
+        Matrix.rotateM(modelMatrix, 0, -60f, 1f, 0f, 0f);  // 旋转
+
+        Matrix.multiplyMM(uMatrix, 0, projectionMatrix, 0, modelMatrix, 0);
+
 
     }
 
@@ -102,7 +101,7 @@ public class HelloRender implements GLSurfaceView.Renderer {
     public void onDrawFrame(GL10 gl) {
         // 清屏
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-        GLES20.glUniformMatrix4fv(uMatrixLocation,1, false,  projectionMatrix,0);
+        GLES20.glUniformMatrix4fv(uMatrixLocation, 1, false, uMatrix, 0);
 
         // 设置属性uColor(颜色 索引,R,G,B,A)
 //        GLES20.glUniform4f(aColorLocation, 1.0f, 1.0f, 1.0f, 1.0f);
@@ -126,21 +125,20 @@ public class HelloRender implements GLSurfaceView.Renderer {
      */
     private FloatBuffer getVertices() {
         float vertices[] = {
-
-                //  X, Y,        R, G, B
-                // 三角扇形
-                0, 0,           1f, 1f, 1f,
-                -0.5f, -0.8f, 0.7f, 0.7f, 0.7f,
-                0.5f, -0.8f, 0.7f, 0.7f, 0.7f,
-                0.5f, 0.8f, 0.7f, 0.7f, 0.7f,
-                -0.5f, 0.8f, 0.7f, 0.7f, 0.7f,
-                -0.5f, -0.8f, 0.7f, 0.7f, 0.7f,
+                // X, Y, Z, W, R, G, B
+                // 三角扇
+                0, 0, 0f,       1.5f,   1f, 1f, 1f,
+                -0.5f, -0.8f, 0f, 1.0f, 0.7f, 0.7f, 0.7f,
+                0.5f, -0.8f, 0f, 1.0f, 0.7f, 0.7f, 0.7f,
+                0.5f, 0.8f, 0f, 2.0f, 0.7f, 0.7f, 0.7f,
+                -0.5f, 0.8f, 0f, 2.0f, 0.7f, 0.7f, 0.7f,
+                -0.5f, -0.8f, 0f, 1.0f, 0.7f, 0.7f, 0.7f,
                 // 中间的分界线
-                -0.5f, 0f, 1f, 0f, 0f,
-                0.5f, 0f, 1f, 0f, 0f,
+                -0.5f, 0f, 0f, 1.5f, 1f, 0f, 0f,
+                0.5f, 0f, 0f, 1.5f, 1f, 0f, 0f,
                 // 两个木槌的质点位置
-                0f, -0.4f, 0f, 0f, 1f,
-                0f, 0.4f, 1f, 0f, 0f,
+                0f, -0.4f, 0f, 1.25f, 0f, 0f, 1f,
+                0f, 0.4f, 0f, 1.75f, 1f, 0f, 0f,
 
         };
 
